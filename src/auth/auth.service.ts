@@ -21,7 +21,7 @@ export class AuthService {
     if (!(await this.userRepository.checkPassword(password, user.password)))
       throw new UnauthorizedException('Error: Incrrect Password!');
 
-    const payload = { email: email, sub: user.id };
+    const payload = { email };
 
     return {
       token: this.jwtService.sign(payload),
