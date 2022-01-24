@@ -25,8 +25,12 @@ export class UserRepository {
     return await bcrypt.hash(password, 10);
   }
 
-  async findUser(email: string) {
+  async findUserByEmail(email: string) {
     return await this.userModel.findOne({ email });
+  }
+
+  async findUserById(_id: string) {
+    return await this.userModel.findOne({ _id });
   }
 
   async checkPassword(password: string, dbPassword: string): Promise<Boolean> {

@@ -34,6 +34,11 @@ export class User {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @Prop({
+    default: 100000,
+  })
+  point: number;
 }
 
 export const UserSchemas = SchemaFactory.createForClass(User);

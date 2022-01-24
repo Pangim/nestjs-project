@@ -4,14 +4,17 @@ import { CategoryService } from './category.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Category, CategorySchemas } from './schemas/category.schemas';
 import { CategoryRepository } from './category.repository';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Category.name, schema: CategorySchemas },
     ]),
+    PassportModule.register({ defaultStrategy: 'jwt', session: false }),
   ],
   controllers: [CategoryController],
   providers: [CategoryService, CategoryRepository],
+  exports: [CategoryRepository],
 })
 export class CategoryModule {}
