@@ -16,7 +16,7 @@ export class AuthService {
     if (!(await this.userRepository.isEmailExist(email)))
       throw new UnauthorizedException('Error: Does Not Exist Email!');
 
-    const user = await this.userRepository.findUser(email);
+    const user = await this.userRepository.findUserByEmail(email);
 
     if (!(await this.userRepository.checkPassword(password, user.password)))
       throw new UnauthorizedException('Error: Incrrect Password!');

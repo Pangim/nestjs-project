@@ -1,10 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { CategoryRepository } from './category.repository';
-import {
-  createDtoCategory,
-  findDtoProductOne,
-  findDtoProductAll,
-} from './dto/create-category.dto';
+import { createDtoCategory, findDtoProductOne, findDtoProductAll } from './dto/create-category.dto';
 import { Category } from './schemas/category.schemas';
 
 @Injectable()
@@ -24,15 +20,14 @@ export class CategoryService {
     const products = await this.categoryRepository.findProductAll(pages, name);
     const productsData = products[0];
 
-    if (!productsData)
-      throw new HttpException('Erorr: Not Found Category', 404);
+    if (!productsData) throw new HttpException('Erorr: Not Found Category', 404);
     return products;
   }
 
   async findProductOne(param: findDtoProductOne): Promise<Category | null> {
-    const product = await this.categoryRepository.findProductOne(param);
-    if (product === null)
-      throw new HttpException('Erorr: Not Found Product', 404);
+    const { productCode } = param;
+    const product = await this.categoryRepository.findProductOne(productCode);
+    if (product === null) throw new HttpException('Erorr: Not Found Product', 404);
     return product;
   }
 }
