@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { CreateDtoUser } from './dto/create-user.dto';
 import { errorHandlerUser, USER_REQUEST_ERROR } from './error/error';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { responseParser } from 'src/common/error/error';
+import { CreateDtoUser } from './dto/create-user.dto';
 import { UserRepository } from './user.repository';
 
 @Injectable()

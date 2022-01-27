@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { responseParser } from 'src/common/error/error';
+import { AUTH_REQUEST_ERROR, errorHandlerAuth } from './error/error';
 import { UserRepository } from 'src/user/user.repository';
 import { SigninDtoUser } from './dto/create-auto.dto';
-import { AUTH_REQUEST_ERROR, errorHandlerAuth } from './error/error';
 
 @Injectable()
 export class AuthService {
@@ -16,10 +16,9 @@ export class AuthService {
     try {
       const userPassword = await this.userRepository.getUserPassword(email);
       const checkPassword = await this.userRepository.checkPassword(password, userPassword);
+      const payload = { email };
 
       if (!checkPassword) throw Error(INCORRECT_PASSOWRD);
-
-      const payload = { email };
 
       return responseParser(
         {
