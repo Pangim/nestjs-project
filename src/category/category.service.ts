@@ -1,7 +1,10 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import { CategoryRepository } from './category.repository';
 import { createDtoCategory, findDtoProductOne, findDtoProductAll } from './dto/create-category.dto';
+import { errorHandlerCategory, CATEGORY_REQUEST_ERROR } from './error/error';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { CategoryRepository } from './category.repository';
 import { Category } from './schemas/category.schemas';
+
+const { DOES_NOT_EXIST_PAGE_PRODUCTS, DOES_NOT_EXIST_PAGE_PRODUCT } = CATEGORY_REQUEST_ERROR;
 
 @Injectable()
 export class CategoryService {
@@ -12,22 +15,34 @@ export class CategoryService {
   }
 
   async findProductAll(query: findDtoProductAll): Promise<Category[] | null> {
-    const { name, page } = query;
+    try {
+      const { name, page } = query;
+      const pages = page - 1;
 
-    if (page <= 0) throw new HttpException('Erorr: Not Found Category', 404);
+      const products = await this.categoryRepository.findProductAll(pages, name);
+      const productsData = products[0];
 
-    const pages = page - 1;
-    const products = await this.categoryRepository.findProductAll(pages, name);
-    const productsData = products[0];
+      if (!productsData) throw Error(DOES_NOT_EXIST_PAGE_PRODUCTS);
 
-    if (!productsData) throw new HttpException('Erorr: Not Found Category', 404);
-    return products;
+      return products;
+    } catch (error) {
+      console.log(error.message);
+      throw new BadRequestException(errorHandlerCategory(error.message));
+    }
   }
 
   async findProductOne(param: findDtoProductOne): Promise<Category | null> {
     const { productCode } = param;
-    const product = await this.categoryRepository.findProductOne(productCode);
-    if (product === null) throw new HttpException('Erorr: Not Found Product', 404);
-    return product;
+
+    try {
+      const product = await this.categoryRepository.findProductOne(productCode);
+
+      if (product === null) throw Error(DOES_NOT_EXIST_PAGE_PRODUCT);
+
+      return product;
+    } catch (error) {
+      console.log(error.message);
+      throw new BadRequestException(errorHandlerCategory(error.message));
+    }
   }
 }

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { createDtoCategory, findDtoProductOne } from './dto/create-category.dto';
 import { Category } from './schemas/category.schemas';
+import { InjectModel } from '@nestjs/mongoose';
+import { Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class CategoryRepository {
@@ -24,6 +24,7 @@ export class CategoryRepository {
     });
     return category;
   }
+
   async findProductAll(pages: number, name: string): Promise<Category[] | null> {
     const LIMIT = 5;
 
@@ -47,11 +48,13 @@ export class CategoryRepository {
         'product.productQuantity',
         '-_id',
       ]);
+
     return product;
   }
 
   async isExistProduct(param: findDtoProductOne): Promise<boolean> {
     const { productCode } = param;
+
     return await this.categoryModel.exists({
       'product.productCode': productCode,
     });

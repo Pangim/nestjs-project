@@ -1,18 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { createDtoCategory, findDtoProductOne, findDtoProductAll } from './dto/create-category.dto';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { PageValidationPipe } from '../common/pipe/get-category-all.pipe';
 import { CategoryService } from './category.service';
-import {
-  createDtoCategory,
-  findDtoProductOne,
-  findDtoProductAll,
-} from './dto/create-category.dto';
 
 @Controller('category')
 export class CategoryController {
@@ -24,7 +13,7 @@ export class CategoryController {
   }
 
   @Get('/product')
-  findProductAll(@Query() query: findDtoProductAll): object {
+  findProductAll(@Query(PageValidationPipe) query: findDtoProductAll): object {
     return this.categoryService.findProductAll(query);
   }
 
