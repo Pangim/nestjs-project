@@ -6,13 +6,13 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserRepository {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {}
 
   async isEmailExist(email: string): Promise<Boolean> {
     return await this.userModel.exists({ email });
   }
 
-  async createUser(name: string, email: string, age: number, password: string) {
+  async createUser(name: string, email: string, age: number, password: string): Promise<object> {
     return await this.userModel.create({
       name,
       email,
@@ -21,8 +21,12 @@ export class UserRepository {
     });
   }
 
-  async hashPassword(password: string) {
+  async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 10);
+  }
+
+  async getUserPassword(email: string): Promise<string> {
+    return (await this.userModel.findOne({ email })).password;
   }
 
   async findUserByEmail(email: string) {

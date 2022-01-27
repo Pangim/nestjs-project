@@ -1,7 +1,7 @@
 {
   "name": "nest-nextlevel",
   "version": "0.0.1",
-  "description": "",
+  "description": "<p align=\"center\">   <a href=\"http://nestjs.com/\" target=\"blank\"><img src=\"https://nestjs.com/img/logo_text.svg\" width=\"320\" alt=\"Nest Logo\" /></a> </p>",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
@@ -21,20 +21,24 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/common": "^8.0.0",
-    "@nestjs/core": "^8.0.0",
+    "@nestjs/common": "^8.2.6",
+    "@nestjs/config": "^1.1.6",
+    "@nestjs/core": "^8.2.6",
     "@nestjs/jwt": "^8.0.0",
     "@nestjs/mongoose": "^9.0.2",
     "@nestjs/passport": "^8.1.0",
     "@nestjs/platform-express": "^8.0.0",
     "bcrypt": "^5.0.1",
-    "mongoose": "^6.1.7",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.13.2",
+    "mongoose": "^6.1.8",
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.5.2",
+    "save": "^2.4.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
@@ -78,5 +82,17 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "main": ".eslintrc.js",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pangim/nestjs-project.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Pangim/nestjs-project/issues"
+  },
+  "homepage": "https://github.com/Pangim/nestjs-project#readme"
 }

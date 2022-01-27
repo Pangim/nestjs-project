@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { SigninDtoUser } from 'src/auth/dto/create-auto.dto';
+import { SignupPasswordValidationPipe } from 'src/common/pipe/signup.pipe';
 import { CreateDtoUser } from './dto/create-user.dto';
 import { UserService } from './user.service';
 
@@ -12,12 +13,12 @@ export class UserController {
   ) {}
 
   @Post('/signup')
-  signup(@Body() body: CreateDtoUser) {
+  signup(@Body(SignupPasswordValidationPipe) body: CreateDtoUser): object {
     return this.userService.signup(body);
   }
 
   @Post('/signin')
-  signin(@Body() body: SigninDtoUser) {
+  signin(@Body() body: SigninDtoUser): object {
     return this.authService.signin(body);
   }
 }
