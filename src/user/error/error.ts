@@ -9,6 +9,7 @@ const errorHandle = {
     status: 401,
     id: 'request.signup.data.is.exist',
     message: '이미 존재하는 유저입니다.',
+    errorCode: 'A001',
   },
 };
 

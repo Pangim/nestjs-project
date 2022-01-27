@@ -1,8 +1,8 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { AuthService } from 'src/auth/auth.service';
-import { SigninDtoUser } from 'src/auth/dto/create-auto.dto';
 import { SignupPasswordValidationPipe } from 'src/common/pipe/signup.pipe';
+import { SigninDtoUser } from 'src/auth/dto/create-auto.dto';
+import { Body, Controller, Post } from '@nestjs/common';
 import { CreateDtoUser } from './dto/create-user.dto';
+import { AuthService } from 'src/auth/auth.service';
 import { UserService } from './user.service';
 
 @Controller()
