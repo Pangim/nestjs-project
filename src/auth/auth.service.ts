@@ -1,30 +1,35 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { responseParser } from 'src/common/error/error';
 import { UserRepository } from 'src/user/user.repository';
 import { SigninDtoUser } from './dto/create-auto.dto';
+import { AUTH_REQUEST_ERROR, errorHandlerAuth } from './error/error';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly userRepository: UserRepository,
-    private jwtService: JwtService,
-  ) {}
+  constructor(private readonly userRepository: UserRepository, private jwtService: JwtService) {}
 
   async signin(body: SigninDtoUser) {
     const { email, password } = body;
+    const { INCORRECT_PASSOWRD } = AUTH_REQUEST_ERROR;
 
-    if (!(await this.userRepository.isEmailExist(email)))
-      throw new UnauthorizedException('Error: Does Not Exist Email!');
+    try {
+      const userPassword = await this.userRepository.getUserPassword(email);
+      const checkPassword = await this.userRepository.checkPassword(password, userPassword);
 
-    const user = await this.userRepository.findUserByEmail(email);
+      if (!checkPassword) throw Error(INCORRECT_PASSOWRD);
 
-    if (!(await this.userRepository.checkPassword(password, user.password)))
-      throw new UnauthorizedException('Error: Incrrect Password!');
+      const payload = { email };
 
-    const payload = { email };
-
-    return {
-      token: this.jwtService.sign(payload),
-    };
+      return responseParser(
+        {
+          token: this.jwtService.sign(payload),
+        },
+        201,
+      );
+    } catch (error) {
+      console.log(error.message);
+      throw new BadRequestException(errorHandlerAuth(error.message));
+    }
   }
 }
