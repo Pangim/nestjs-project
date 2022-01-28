@@ -1,3 +1,15 @@
+import { GetOrderQueryValidationPipe } from 'src/common/pipe/gert-order-all.pipe';
+import { getUserId } from 'src/common/getUserId/getUserId';
+import { OrderService } from './order.service';
+import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
+import {
+  createDtoOrderDetail,
+  createDtoOrderDetailParam,
+  getDtoOrderDetailAllRefundQuery,
+  getDtoOrderDetailOneParam,
+  patchDtoOrderRefundParam,
+} from './dto/create-order.dto';
 import {
   Body,
   Controller,
@@ -10,17 +22,6 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
-import { GetOrderQueryValidationPipe } from 'src/common/pipe/custom.pipe';
-import {
-  createDtoOrderDetail,
-  createDtoOrderDetailParam,
-  getDtoOrderDetailAllRefundQuery,
-  getDtoOrderDetailOneParam,
-  patchDtoOrderRefundParam,
-} from './dto/create-order.dto';
-import { OrderService } from './order.service';
 
 @Controller('order')
 export class OrderController {
@@ -33,7 +34,8 @@ export class OrderController {
     @Param() param: createDtoOrderDetailParam,
     @Req() req: Request,
   ): object {
-    const userId = req.user['id'];
+    const userId = getUserId(req);
+
     return this.orderService.createOrderDetail(body, param, userId);
   }
 
@@ -44,21 +46,24 @@ export class OrderController {
     @Query('refund', ParseIntPipe, GetOrderQueryValidationPipe)
     query: getDtoOrderDetailAllRefundQuery,
   ): object {
-    const userId = req.user['id'];
+    const userId = getUserId(req);
+
     return this.orderService.getOrderDetailAll(userId, query);
   }
 
   @Get('/detail/:orderCode')
   @UseGuards(AuthGuard())
   getOrderDetailOne(@Req() req: Request, @Param() param: getDtoOrderDetailOneParam): object {
-    const userId = req.user['id'];
+    const userId = getUserId(req);
+
     return this.orderService.getOrderDetailOne(userId, param);
   }
 
   @Patch('/refund/:orderCode')
   @UseGuards(AuthGuard())
   updateOrderRefund(@Req() req: Request, @Param() param: patchDtoOrderRefundParam): object {
-    const userId = req.user['id'];
+    const userId = getUserId(req);
+
     return this.orderService.updateOrderRefund(userId, param);
   }
 }
