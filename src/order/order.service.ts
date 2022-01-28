@@ -1,7 +1,10 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { errorHandlerOrder, ORDER_REQUEST_ERROR } from './error/error';
+import { CategoryRepository } from 'src/category/category.repository';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { responseParser } from 'src/common/error/error';
+import { OrderRepository } from './order.repository';
 import { InjectConnection } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { CategoryRepository } from 'src/category/category.repository';
 import {
   createDtoOrderDetail,
   createDtoOrderDetailParam,
@@ -9,7 +12,6 @@ import {
   getDtoOrderDetailOneParam,
   patchDtoOrderRefundParam,
 } from './dto/create-order.dto';
-import { OrderRepository } from './order.repository';
 
 const selectBuyRefundType = {
   buy: 'buy',
@@ -35,18 +37,25 @@ export class OrderService {
     session.startTransaction();
 
     try {
-      const { quantity } = body;
-      const { productCode } = param;
+      const {
+        NOT_FOUND_PRODUCT,
+        EXCEED_PRODUCT_QUANTITY,
+        NOT_SELECT_ZERO_QUANTITY,
+        NOT_ENOUGH_MONEY,
+      } = ORDER_REQUEST_ERROR;
       const type: BuyRefundType = 'buy';
+      const { productCode } = param;
+      const { quantity } = body;
+
       const isExistProduct = await this.categoryRepository.isExistProduct(param);
-      if (!isExistProduct) throw new HttpException('ERROR NOT FOUND PRODUCT', 404);
+      if (!isExistProduct) throw Error(NOT_FOUND_PRODUCT);
 
       const product = await this.orderRepository.findOrderProduct(productCode);
+      const buyZeroQuantity = await this.orderRepository.buyZeroQuantity(body);
       const buyProductQuantityExcced = await this.orderRepository.buyProductQuantityExcced(
         body,
         productCode,
       );
-      const buyZeroQuantity = await this.orderRepository.buyZeroQuantity(body);
       const userBalancePoint = await this.orderRepository.getUserBalancePoint(
         userId,
         quantity,
@@ -54,9 +63,9 @@ export class OrderService {
         type,
       );
 
-      if (buyProductQuantityExcced) throw new HttpException('ERROR EXCEED PRODUCT QUANTITY', 400);
-      if (buyZeroQuantity) throw new HttpException('ERROR NOT SELECT ZERO QUANTITY', 400);
-      if (userBalancePoint < 0) throw new HttpException('ERROR NOT ENOUGH MONEY', 400);
+      if (buyProductQuantityExcced) throw Error(EXCEED_PRODUCT_QUANTITY);
+      if (buyZeroQuantity) throw Error(NOT_SELECT_ZERO_QUANTITY);
+      if (userBalancePoint < 0) throw Error(NOT_ENOUGH_MONEY);
 
       const isExistOrderUser = await this.orderRepository.isExistOrderUser(userId);
       if (!isExistOrderUser) await this.orderRepository.createOrderUser(userId, session);
@@ -66,33 +75,65 @@ export class OrderService {
       await this.orderRepository.updateProductQuantity(quantity, productCode, type, session);
 
       await session.commitTransaction();
+
+      return responseParser(
+        {
+          message: 'ORDER SUCCESS!',
+        },
+        201,
+      );
     } catch (error) {
       await session.abortTransaction();
       console.log(error.message);
-      throw error;
+      throw new BadRequestException(errorHandlerOrder(error.message));
     } finally {
       session.endSession();
     }
   }
 
   async getOrderDetailAll(userId: string, query: getDtoOrderDetailAllRefundQuery) {
-    return await this.orderRepository.getOrderDetailAll(userId, query);
+    const { NOT_FOUND_ORDER_INFO } = ORDER_REQUEST_ERROR;
+
+    try {
+      const orderDetailAll = await this.orderRepository.getOrderDetailAll(userId, query);
+      const orderDetailsData = orderDetailAll[0].receiverDetail[0];
+
+      if (!orderDetailsData) throw Error(NOT_FOUND_ORDER_INFO);
+
+      return orderDetailAll;
+    } catch (error) {
+      console.log(error.message);
+      throw new BadRequestException(errorHandlerOrder(error.message));
+    }
   }
 
   async getOrderDetailOne(userId: string, param: getDtoOrderDetailOneParam) {
-    return await this.orderRepository.getOrderDetailOne(userId, param);
+    const { NOT_FOUND_ORDER_CODE_ONE } = ORDER_REQUEST_ERROR;
+
+    try {
+      const orderDetailOne = await this.orderRepository.getOrderDetailOne(userId, param);
+      const orderDetailsData = orderDetailOne[0].receiverDetail[0];
+
+      if (!orderDetailsData) throw Error(NOT_FOUND_ORDER_CODE_ONE);
+
+      return orderDetailOne;
+    } catch (error) {
+      console.log(error.message);
+      throw new BadRequestException(errorHandlerOrder(error.message));
+    }
   }
 
   async updateOrderRefund(userId: string, param: patchDtoOrderRefundParam) {
+    const { NOT_FOUND_ORDER_CODE_REFUND, ALREADY_REFUNDED_OREDR } = ORDER_REQUEST_ERROR;
     const session = await this.connection.startSession();
     session.startTransaction();
 
     try {
       const isExistOrder = await this.orderRepository.isExistOrder(userId, param);
-      if (!isExistOrder) throw new HttpException('ERROR NOT FOUND ORDER', 404);
+      if (!isExistOrder) throw Error(NOT_FOUND_ORDER_CODE_REFUND);
 
       const isAlreadyRefund = await this.orderRepository.isAlreadyRefund(userId, param);
-      if (isAlreadyRefund) throw new HttpException('ERROR ALREADY REFUND ORDER!', 400);
+      if (isAlreadyRefund) throw Error(ALREADY_REFUNDED_OREDR);
 
       const getOrderItems = await this.orderRepository.getRefundProductQuantitiyTotalPrice(
         userId,
@@ -100,6 +141,7 @@ export class OrderService {
       );
       const type: BuyRefundType = 'refund';
       const { quantity, productCode } = getOrderItems;
+
       const product = await this.orderRepository.findOrderProduct(productCode);
       const userBalancePoint = await this.orderRepository.getUserBalancePoint(
         userId,
@@ -112,10 +154,17 @@ export class OrderService {
       await this.orderRepository.updateOrderRefund(userId, param, session);
 
       await session.commitTransaction();
+
+      return responseParser(
+        {
+          message: 'REFUND SUCCESS!',
+        },
+        200,
+      );
     } catch (error) {
       await session.abortTransaction();
       console.log(error.message);
-      throw error;
+      throw new BadRequestException(errorHandlerOrder(error.message));
     } finally {
       session.endSession();
     }

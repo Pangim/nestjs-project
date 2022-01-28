@@ -1,20 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { CategoryRepository } from 'src/category/category.repository';
-import { findDtoProductOne } from 'src/category/dto/create-category.dto';
-import { Category } from 'src/category/schemas/category.schemas';
 import { createOrderCode } from 'src/common/ordercode/create-orderCode';
-import { User } from 'src/user/schemas/user.schemas';
+import { CategoryRepository } from 'src/category/category.repository';
+import { Category } from 'src/category/schemas/category.schemas';
 import { UserRepository } from 'src/user/user.repository';
+import { OrderDetail } from './schemas/order.scheams';
+import { User } from 'src/user/schemas/user.schemas';
+import { InjectModel } from '@nestjs/mongoose';
+import { Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
 import {
   createDtoOrderDetail,
-  createDtoOrderDetailParam,
   getDtoOrderDetailAllRefundQuery,
   getDtoOrderDetailOneParam,
   patchDtoOrderRefundParam,
 } from './dto/create-order.dto';
-import { OrderDetail } from './schemas/order.scheams';
 
 const selectRefund = {
   NOTREFUND: 0,
@@ -139,19 +137,21 @@ export class OrderRepository {
       )
       .session(session);
   }
+
   async getProductQuantity(type: string, productCode: string, quantity: number) {
+    const product = (await this.categoryRepository.findProductOne(productCode)).product;
+
     if (type === 'refund') {
-      const product = (await this.categoryRepository.findProductOne(productCode)).product;
       const productQuantity = product['productQuantity'] + quantity;
 
       return productQuantity;
     } else if (type === 'buy') {
-      const product = (await this.categoryRepository.findProductOne(productCode)).product;
       const productQuantity = product['productQuantity'] - quantity;
 
       return productQuantity;
     }
   }
+
   async getOrderDetailAll(userId: string, query: getDtoOrderDetailAllRefundQuery) {
     return await this.orderModel.aggregate([
       { $match: { userId } },
@@ -199,11 +199,13 @@ export class OrderRepository {
   ): Promise<boolean> {
     const { quantity } = body;
     const product = (await this.categoryRepository.findProductOne(productCode)).product;
+
     return product['productQuantity'] - quantity < 0 ? true : false;
   }
 
   async buyZeroQuantity(body: createDtoOrderDetail): Promise<boolean> {
     const { quantity } = body;
+
     return quantity <= 0 ? true : false;
   }
 
@@ -236,7 +238,6 @@ export class OrderRepository {
 
   async getRefundProductQuantitiyTotalPrice(userId: string, param: patchDtoOrderRefundParam) {
     const getOrderDetailOne = await this.getOrderDetailOne(userId, param);
-
     const product = getOrderDetailOne[0].receiverDetail[0];
 
     return {
@@ -247,6 +248,7 @@ export class OrderRepository {
 
   async isExistOrder(userId: string, param: patchDtoOrderRefundParam): Promise<boolean> {
     const { orderCode } = param;
+
     return await this.orderModel.exists({
       userId,
       receiverDetail: {

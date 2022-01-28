@@ -1,4 +1,5 @@
-import { GetOrderQueryValidationPipe } from 'src/common/pipe/custom.pipe';
+import { GetOrderQueryValidationPipe } from 'src/common/pipe/gert-order-all.pipe';
+import { getUserId } from 'src/common/getUserId/getUserId';
 import { OrderService } from './order.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
@@ -21,7 +22,6 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { getUserId } from 'src/common/getUserId/getUserId';
 
 @Controller('order')
 export class OrderController {
