@@ -238,6 +238,7 @@ export class OrderRepository {
 
   async getRefundProductQuantitiyTotalPrice(userId: string, param: patchDtoOrderRefundParam) {
     const getOrderDetailOne = await this.getOrderDetailOne(userId, param);
+
     const product = getOrderDetailOne[0].receiverDetail[0];
 
     return {
