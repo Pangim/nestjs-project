@@ -18,6 +18,7 @@ import { Module } from '@nestjs/common';
       { name: Category.name, schema: CategorySchemas },
       { name: User.name, schema: UserSchemas },
     ]),
+
     UserModule,
     CategoryModule,
   ],
