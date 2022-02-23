@@ -211,6 +211,7 @@ export class OrderRepository {
 
   async updateOrderRefund(userId: string, param: patchDtoOrderRefundParam, session: any) {
     const { orderCode } = param;
+
     const NOTREFUND: Refund = 0;
     const REFUND: Refund = 1;
 
