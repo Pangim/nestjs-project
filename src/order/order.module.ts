@@ -22,6 +22,7 @@ import { Module } from '@nestjs/common';
     UserModule,
     CategoryModule,
   ],
+
   providers: [OrderService, OrderRepository],
   controllers: [OrderController],
 })
